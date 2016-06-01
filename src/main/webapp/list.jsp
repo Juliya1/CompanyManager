@@ -5,7 +5,7 @@
     <c:forEach begin="0" end="${company.nestingLevel}" varStatus="loop">
         -
     </c:forEach>
-    ${company.name}, earnings: ${company.earnings} <br/>
+    ${company.name}, earnings: ${company.earnings}, children earnings: ${company.childrenEarnings} <br/>
 
     <c:set var="companies" value="${company.children}" scope="request"/>
     <jsp:include page="list.jsp"/>

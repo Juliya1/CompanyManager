@@ -120,7 +120,39 @@ public class CompanyRepositoryImpl implements CompanyRepository {
                 = companies.stream().filter(e -> e.getParentName() != null).collect(Collectors.toList());
         companies.removeAll(subsidiaryCompanies);
 
-        return createTree(companies, companies, subsidiaryCompanies);
+        return sumEarnings(createTree(companies, companies, subsidiaryCompanies));
+    }
+
+    private List<Company> createTree(final List<Company> mainCompaniesImmutable,
+                                     List<Company> mainCompanies, List<Company> subsidiaryCompanies) {
+
+        List<Company> nextMainCompanies = new ArrayList<>();
+        for (Company c : mainCompanies) {
+            List<Company> toRemove = new ArrayList<>();
+            for (Company s : subsidiaryCompanies) {
+                if (s.getParentName().equals(c.getName())) {
+                    c.addCompany(s);
+                    toRemove.add(s);
+                    nextMainCompanies.add(s);
+                }
+            }
+            subsidiaryCompanies.removeAll(toRemove);
+        }
+
+        return subsidiaryCompanies.isEmpty() ? mainCompaniesImmutable :
+                createTree(mainCompaniesImmutable, nextMainCompanies, subsidiaryCompanies);
+    }
+
+    private List<Company> sumEarnings(List<Company> companies) {
+        companies.forEach(c -> sumEarnings(c, c.getChildren()));
+        companies.forEach(c -> sumEarnings(c.getChildren()));
+        return companies;
+    }
+
+    private void sumEarnings(Company company, List<Company> companies) {
+        int sum = companies.stream().mapToInt(Company::getEarnings).sum();
+        company.addChildrenEarnings(sum);
+        companies.forEach(c -> sumEarnings(company, c.getChildren()));
     }
 
 
@@ -147,26 +179,6 @@ public class CompanyRepositoryImpl implements CompanyRepository {
         List<Company> result = new ArrayList<>();
         companies.forEach(c -> result.addAll(c.getChildren()));
         return getCompanyWithChildren(name, result);
-    }
-
-    private List<Company> createTree(final List<Company> mainCompaniesImmutable,
-                                     List<Company> mainCompanies, List<Company> subsidiaryCompanies) {
-
-        List<Company> nextMainCompanies = new ArrayList<>();
-        for (Company c : mainCompanies) {
-            List<Company> toRemove = new ArrayList<>();
-            for (Company s : subsidiaryCompanies) {
-                if (s.getParentName().equals(c.getName())) {
-                    c.addCompany(s);
-                    toRemove.add(s);
-                    nextMainCompanies.add(s);
-                }
-            }
-            subsidiaryCompanies.removeAll(toRemove);
-        }
-
-        return subsidiaryCompanies.isEmpty() ? mainCompaniesImmutable :
-                createTree(mainCompaniesImmutable, nextMainCompanies, subsidiaryCompanies);
     }
 
     @Override
