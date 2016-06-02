@@ -20,12 +20,12 @@ public class CompanyRepositoryImpl implements CompanyRepository {
 
     public CompanyRepositoryImpl() {
         try {
-            Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/test", "root", "1234");
+            String dbUrl = System.getenv("JDBC_DATABASE_URL");
+            connection = DriverManager.getConnection(dbUrl);
             if (connection == null) {
                 throw new SQLException("No connection to DB");
             }
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             throw new CompanyException("Internal server error");
         }
     }
