@@ -20,12 +20,14 @@ public class CompanyRepositoryImpl implements CompanyRepository {
 
     public CompanyRepositoryImpl() {
         try {
+            Class.forName("org.postgresql.Driver");
             String dbUrl = System.getenv("JDBC_DATABASE_URL");
             connection = DriverManager.getConnection(dbUrl);
             if (connection == null) {
                 throw new SQLException("No connection to DB");
             }
-        } catch (SQLException e) {
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
             throw new CompanyException("Internal server error");
         }
     }
